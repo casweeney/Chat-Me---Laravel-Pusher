@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\User;
+use App\Message;
+use Illuminate\Support\Facades\Auth;
+use Pusher\Pusher;
 
 class HomeController extends Controller
 {
@@ -23,6 +27,50 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        //select all users except logged in user
+        $users = User::where('id', '!=', Auth::id())->get();
+        return view('home', ['users'=>$users]);
+    }
+
+    public function getMessage($user_id){
+        $my_id = Auth::id();
+        //getting  all messages for selected user
+        //getting those message which is from = Auth::id() and to = user_id OR from = user_id and to = Auth::id();
+        $messages = Message::where(function($query) use ($user_id, $my_id){
+            $query->where('from', $my_id)->where('to', $user_id);
+        })->orWhere(function ($query) use ($user_id, $my_id){
+            $query->where('from', $user_id)->where('to', $my_id);
+        })->get();
+
+        return view('messages.index', ['messages' => $messages]);
+    }
+
+    public function sendMessage(Request $request){
+        $from = Auth::id();
+        $to = $request->receiver_id;
+        $message = $request->message;
+
+        $data = new Message;
+        $data->from = $from;
+        $data->to = $to;
+        $data->message = $message;
+        $data->is_read = 0; // message will be unread when sending message
+        $data->save();
+
+        //pusher
+        $options = array(
+            'cluster' => 'ap2',
+            'useTLS' => true
+        );
+
+        $pusher = new Pusher(
+            env('PUSHER_APP_KEY'),
+            env('PUSHER_APP_SECRET'),
+            env('PUSHER_APP_ID'),
+            $options
+        );
+
+        $data = ['from' => $from, 'to' => $to]; //sending from and to user id when enter is pressed
+        $pusher->trigger('my-channel', 'my-event', $data);
     }
 }
