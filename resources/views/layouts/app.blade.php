@@ -200,7 +200,7 @@
             });
 
             // Enable pusher logging - don't include this in production
-            Pusher.logToConsole = true;
+            //Pusher.logToConsole = true;
 
             var pusher = new Pusher('af3e74357559c2ff8cc5', {
                 cluster: 'ap2',
@@ -209,12 +209,33 @@
 
             var channel = pusher.subscribe('my-channel');
             channel.bind('my-event', function(data) {
-                alert(JSON.stringify(data));
+                //alert(JSON.stringify(data));
+                //console.log(data);
+
+                if(my_id == data.from){
+                    //alert('sender');
+                    $('#' + data.to).click();
+                } else if(my_id == data.to){
+                    if(receiver_id == data.from){
+                        // if receiver is selected, reload the selected user ...
+                        $('#' + data.from).click();
+                    } else{
+                        // if receiver is not selected, add notification for that user
+                        var pending = parseInt($('#' + data.from).find('.pending').html());
+
+                        if(pending){
+                            $('#' + data.from).find('.pending').html(pending + 1);
+                        } else {
+                            $('#' + data.from).append('<span class="pending">1</span>');
+                        }
+                    }
+                }
             });
 
             $('.user').click(function(){
                 $('.user').removeClass('active');
                 $(this).addClass('active');
+                $(this).find('.pending').remove();
 
                 receiver_id = $(this).attr('id');
                 $.ajax({
@@ -224,6 +245,7 @@
                     cache: false,
                     success: function(data){
                         $('#messages').html(data);
+                        scrollToBottom();
                     }
                 });
             });
@@ -248,12 +270,19 @@
                             
                         },
                         complete: function() {
-
+                            scrollToBottom();
                         }
                     })
                 }
             });
         });
+
+        //make a function to scroll down auto 
+        function scrollToBottom(){
+            $('.message-wrapper').animate({
+                scrollTop: $('.message-wrapper').get(0).scrollHeight
+            }, 50);
+        }
     </script>
 </body>
 </html>
