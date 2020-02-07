@@ -1,6 +1,6 @@
 ## About Chat Me
 
-ChatMe is a realtime Laravel Chat App built for realtime communication. It was built with the Laravel 5.8 Frameork and Reatime was made possible using Pusher. <a href="https://pusher.com">pusher.com</a>
+ChatMe is a realtime Laravel Chat App built for realtime communication. It was built with the Laravel 5.8 Framework and Reatime was made possible using Pusher. <a href="https://pusher.com">pusher.com</a>
 
 ### Live Demo App @ https://chatmecas.herokuapp.com/
 - Visit https://chatmecas.herokuapp.com/
